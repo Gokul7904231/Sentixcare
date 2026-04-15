@@ -6,6 +6,7 @@ No st.rerun() needed for play/stop/next/prev.
 """
 
 import streamlit as st
+import urllib.parse
 from typing import List, Dict
 
 def play_track(track: Dict):
@@ -151,10 +152,9 @@ def display_enhanced_music_recommendations(
                     st.markdown(f"**🏷️ Mood:** {keywords}")
 
             with col2:
-                youtube_id = rec.get('youtube_id')
-                if youtube_id:
-                    youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
-                    st.link_button("▶️ Play on YouTube", url=youtube_url, use_container_width=True)
+                search_query = urllib.parse.quote(f"{rec['title']} {rec['artist']} audio")
+                youtube_url = f"https://www.youtube.com/results?search_query={search_query}"
+                st.link_button("▶️ Play on YouTube", url=youtube_url, use_container_width=True)
 
             # Details section — use expander instead of button to avoid reruns
             with st.expander("📊 Detailed Analysis"):
@@ -243,10 +243,9 @@ def display_mood_journey_playlist(playlist: List[Dict], emotion_summary: str):
                 st.markdown(f"**🎯 Mood Match:** {match_score:.1f}%")
 
             with col2:
-                youtube_id = song.get('youtube_id')
-                if youtube_id:
-                    youtube_url = f"https://www.youtube.com/watch?v={youtube_id}"
-                    st.link_button("▶️ Play on YouTube", url=youtube_url, use_container_width=True)
+                search_query = urllib.parse.quote(f"{song['title']} {song['artist']} audio")
+                youtube_url = f"https://www.youtube.com/results?search_query={search_query}"
+                st.link_button("▶️ Play on YouTube", url=youtube_url, use_container_width=True)
 
             # Details via expander — no rerun
             with st.expander("📊 Song Info"):
