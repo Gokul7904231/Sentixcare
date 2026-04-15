@@ -72,37 +72,24 @@ def render_multimodal_mode_ui():
                         st.warning("No faces detected.")
 
     with st.expander("💬 Add from Text", expanded=True):
-        mood_options_multi = {
-            "Happy": "Feeling joyful, content, or positive.",
-            "Sad": "Feeling down, blue, or disappointed.",
-            "Anger": "Feeling frustrated, irritated, or mad.",
-            "Fear": "Feeling anxious, worried, or nervous.",
-            "Surprise": "Feeling shocked, amazed, or stunned.",
-            "Disgust": "Feeling repulsed, sick, or appalled.",
-            "Neutral": "Feeling calm, stable, or just okay.",
-            "Contempt": "Feeling disrespectful, mocking, or cynical."
-        }
-
-        col_m1, col_m2 = st.columns([1, 1])
-        with col_m1:
-            mood_choice_multi = st.selectbox(
-                "I'm feeling...",
-                options=list(mood_options_multi.keys()),
-                key="multi_mood_select"
-            )
-            st.markdown(f"**Selected mood:** {mood_choice_multi}")
-
-        with col_m2:
-            intensity_multi = st.slider("Intensity", 1, 10, 5, key="multi_intensity_slider")
-            mood_text_extra = st.text_input("Describe briefly:", placeholder="e.g. Tough day at work", key="multi_text_brief")
+        mood_text = st.text_area(
+            "Describe your mood:",
+            placeholder="e.g., I'm feeling overwhelmed today after a long meeting...",
+            height=120,
+            help="Our AI will automatically detect your emotion from the text.",
+            key="multi_mood_text"
+        )
+        intensity_multi = st.slider("Mood Intensity", 1, 10, 5, key="multi_intensity_slider")
 
         if st.button("Add Text Emotion", use_container_width=True):
-            # Base confidence based on intensity
-            conf_multi = 70.0 + (intensity_multi * 2)
-            conf_multi = min(100.0, conf_multi)
-            
-            _process_emotion_result_multimodal(mood_choice_multi.lower(), conf_multi, "text")
-            st.toast(f"Added {mood_choice_multi} input!")
+            if not mood_text.strip():
+                st.warning("Please describe your mood before adding.")
+            else:
+                emotion = detect_emotion_from_text_simple(mood_text)
+                conf_multi = 70.0 + (intensity_multi * 2)
+                conf_multi = min(100.0, conf_multi)
+                _process_emotion_result_multimodal(emotion, conf_multi, "text")
+                st.toast(f"Detected and added **{emotion.title()}** from your description!")
 
     with st.expander("📹 Add from Webcam", expanded=True):
         st.info("Captures a single frame for quick analysis.")

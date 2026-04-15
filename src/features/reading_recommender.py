@@ -4,12 +4,49 @@ Suggests articles, books, and reading materials based on detected emotions
 """
 
 import random
+import requests
+import streamlit as st
 from typing import Dict, List
+
+@st.cache_data(ttl=600, show_spinner=False)
+def fetch_devto_articles(tag, limit=4):
+    """Fetches articles from Dev.to API with a strict timeout."""
+    url = f"https://dev.to/api/articles?tag={tag}&per_page={limit}"
+    try:
+        response = requests.get(url, timeout=5) 
+        response.raise_for_status()
+        data = response.json() 
+        
+        mapped_articles = []
+        for art in data: 
+            mapped_articles.append({
+                "title": art.get("title", "Wellness Article"),
+                "description": (art.get("description", "")[:250] + "...") if art.get("description") else "Read more about this topic...",
+                "url": art.get("url", "https://dev.to"), 
+                "category": art.get("tag_list", ["wellness"])[0].title() if art.get("tag_list") else "Wellness",
+                "reading_time": f"{art.get('reading_time_minutes', 5)} min read"
+            })
+        return mapped_articles
+    except Exception as e:
+        print(f"API Error: {e}") 
+        return None
 
 class ReadingRecommender:
     def __init__(self):
-        # Reading recommendations mapped to emotions
-        self.emotion_reading_mapping = {
+        # Map emotions to Dev.to tags
+        self.emotion_tag_map = {
+            "happy": "happiness",
+            "sad": "mentalhealth",
+            "anger": "mindfulness",
+            "fear": "anxiety",
+            "neutral": "productivity",
+            "disgust": "selfcare",
+            "surprise": "learning",
+            "contempt": "communication"
+        }
+        # Your hardcoded mapping as backup
+        self._hardcoded_backup = {
+
             "happy": {
                 "articles": [
                     {
@@ -291,29 +328,34 @@ class ReadingRecommender:
     
     def get_reading_recommendations(self, emotion: str, num_recommendations: int = 3) -> Dict:
         """Get reading recommendations for a specific emotion"""
-        emotion = emotion.lower()
+        clean_emotion = emotion.lower()
         
-        if emotion not in self.emotion_reading_mapping:
-            # Default recommendations for unknown emotions
-            return self._get_default_recommendations()
+        tag = self.emotion_tag_map.get(clean_emotion, "wellness")
         
-        recommendations = self.emotion_reading_mapping[emotion]
+        # Start with hardcoded backup
+        recommendations = self._hardcoded_backup.get(clean_emotion, {}).copy()
         
-        # Select random recommendations from each category
-        selected_articles = random.sample(recommendations.get("articles", []), 
-                                        min(num_recommendations, len(recommendations.get("articles", []))))
-        selected_books = random.sample(recommendations.get("books", []), 
-                                     min(2, len(recommendations.get("books", []))))
-        selected_stories = random.sample(recommendations.get("stories", []), 
-                                       min(1, len(recommendations.get("stories", []))))
+        # Try API articles
+        api_articles = fetch_devto_articles(tag, num_recommendations)
         
-        return {
-            "emotion": emotion,
-            "articles": selected_articles,
-            "books": selected_books,
-            "stories": selected_stories,
-            "total_recommendations": len(selected_articles) + len(selected_books) + len(selected_stories)
-        }
+        if api_articles:
+            recommendations["articles"] = api_articles
+        elif "articles" not in recommendations:
+            recommendations["articles"] = []
+            
+        # Random sample if too many
+        if "articles" in recommendations and len(recommendations["articles"]) > num_recommendations:
+            recommendations["articles"] = random.sample(recommendations["articles"], num_recommendations)
+            
+        # Add total
+        recommendations["total_recommendations"] = len(recommendations.get("articles", [])) + len(recommendations.get("books", [])) + len(recommendations.get("stories", []))
+        recommendations["emotion"] = clean_emotion
+            
+        return recommendations
+
+    def _get_default_recommendations(self) -> Dict:
+        """Default recommendations for unknown emotions"""
+        return self.get_reading_recommendations("neutral")
     
     def _get_default_recommendations(self) -> Dict:
         """Default recommendations for unknown emotions"""

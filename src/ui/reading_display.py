@@ -4,6 +4,7 @@ Handles the display of reading recommendations in the Streamlit app
 """
 
 import streamlit as st
+import urllib.parse
 from typing import Dict, List
 
 def display_reading_recommendations(recommendations: Dict, emotion: str, title: str = "📚 Reading Recommendations"):
@@ -36,13 +37,14 @@ def display_reading_recommendations(recommendations: Dict, emotion: str, title: 
                 st.markdown(f"[🔗 Read Article: {article['title']}]({article['url']})")
                 
                 # Add a button for easy access
-                if st.button(f"📖 Open Article", key=f"article_{i}"):
-                    st.markdown(f"""
-                    <script>
-                        window.open('{article['url']}', '_blank');
-                    </script>
-                    """, unsafe_allow_html=True)
-                    st.success(f"Opening: {article['title']}")
+                url = article.get('url', '')
+                if 'dev.to' in url:
+                    st.link_button(f"📖 Open Article", url=url, use_container_width=True)
+                else:
+                    title_query = urllib.parse.quote_plus(article.get('title', 'Mental Health Article'))
+                    safe_url = f"https://www.google.com/search?q={title_query}"
+                    st.link_button(f"📖 Open Article", url=safe_url, use_container_width=True)
+                st.code(url or 'Fallback Google Search')
     
     # Display books
     if recommendations.get("books"):
@@ -63,13 +65,10 @@ def display_reading_recommendations(recommendations: Dict, emotion: str, title: 
                 st.markdown(f"[🔗 View Book: {book['title']}]({book['url']})")
                 
                 # Add a button for easy access
-                if st.button(f"📚 Open Book Page", key=f"book_{i}"):
-                    st.markdown(f"""
-                    <script>
-                        window.open('{book['url']}', '_blank');
-                    </script>
-                    """, unsafe_allow_html=True)
-                    st.success(f"Opening: {book['title']}")
+                book_title = book.get('title', 'Recommended Reading')
+                search_query = urllib.parse.quote_plus(book_title)
+                safe_book_url = f"https://www.google.com/search?q={search_query}"
+                st.link_button(f"📚 Open Book Page", url=safe_book_url, use_container_width=True)
     
     # Display stories
     if recommendations.get("stories"):
@@ -90,13 +89,10 @@ def display_reading_recommendations(recommendations: Dict, emotion: str, title: 
                 st.markdown(f"[🔗 View Story: {story['title']}]({story['url']})")
                 
                 # Add a button for easy access
-                if st.button(f"📖 Open Story Page", key=f"story_{i}"):
-                    st.markdown(f"""
-                    <script>
-                        window.open('{story['url']}', '_blank');
-                    </script>
-                    """, unsafe_allow_html=True)
-                    st.success(f"Opening: {story['title']}")
+                story_title = story.get('title', 'Inspiring Story')
+                search_query = urllib.parse.quote_plus(story_title)
+                safe_story_url = f"https://www.google.com/search?q={search_query}"
+                st.link_button(f"📖 Open Story Page", url=safe_story_url, use_container_width=True)
     
     # Add summary
     st.markdown("---")
