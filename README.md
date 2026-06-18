@@ -2,6 +2,7 @@
 
 > **Your Intelligent Mental Health & Wellness Companion**  
 > *Emotion Detection • Music Therapy • Reading Suggestions • Wellness Coaching • AI Chatbot Support*
+> Live : https://sentixcare.gokul.software/
 
 ---
 
@@ -54,7 +55,7 @@ User Input
   │   Emotion Detection Engine  │
   │  (src/core/emotion_engine)  │
   │                             │
-  │  1. Face Detection:          │
+  │  1. Face Detection:         │
   │     OpenCV Haar Cascade     │
   │     → YOLOv7-tiny (fallback)│
   │                             │
@@ -82,10 +83,10 @@ User Input
   │  (src/ui/recommendation_    │
   │   panel.py)                 │
   │                             │
-  │  🎵 Music  📚 Reading       │
+  │  🎵 Music  📚 Reading      │
   │  🧘 Wellness 🎨 Coloring   │
-  │  💬 Chatbot 📝 Journal      │
-  │  🆘 Support Resources       │
+  │  💬 Chatbot 📝 Journal     │
+  |  🆘 Support Resources      ||
   └─────────────────────────────┘
                │
                ▼
@@ -457,7 +458,7 @@ See [`docs/LICENSE`](docs/LICENSE) for full license text.
 ## 👤 Author
 
 **Gokul** — Final Year Project, 2026  
-🔗 GitHub: [Gokul7904231/ERS-System](https://github.com/Gokul7904231/ERS-System)
+🔗 GitHub: [Gokul7904231/ERS-System](https://github.com/Gokul7904231/Sentixcare)
 
 ---
 
