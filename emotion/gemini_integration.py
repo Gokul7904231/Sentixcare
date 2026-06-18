@@ -56,22 +56,37 @@ def ask_gemini_wellness_ai(user_input, emotion="neutral", confidence=0.0):
     and returns the AI's response.
     """
     try:
-        # Configure Gemini API key from Streamlit secrets
-        if "GOOGLE_API_KEY" in st.secrets:
-            genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+        # Configure Gemini API key from environment variables or Streamlit secrets
+        api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+        if not api_key:
+            try:
+                if "GEMINI_API_KEY" in st.secrets:
+                    api_key = st.secrets["GEMINI_API_KEY"]
+                elif "GOOGLE_API_KEY" in st.secrets:
+                    api_key = st.secrets["GOOGLE_API_KEY"]
+            except Exception:
+                pass
+        
+        if api_key:
+            genai.configure(api_key=api_key)
         else:
-            return "Gemini API Key not found in Streamlit secrets. Please set it to enable the chatbot."
+            return "Gemini API Key not found. Please set it to enable the chatbot."
 
-        # Check if the model is available
-        try:
-            genai.get_model('gemini-1.5-flash')
-        except Exception:
-            return "Gemini model 'gemini-1.5-flash' is not available. Check API key and model access."
+        # Dynamic model selection
+        model = None
+        for model_name in ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest']:
+            try:
+                genai.get_model(f'models/{model_name}')
+                model = genai.GenerativeModel(
+                    model_name=model_name,
+                    system_instruction=SYSTEM_PROMPT
+                )
+                break
+            except Exception:
+                continue
 
-        model = genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
-            system_instruction=SYSTEM_PROMPT
-        )
+        if not model:
+            return "No supported Gemini Flash model found. Check API key and model access."
         
         # Construct the prompt as per the user's template
         prompt = f"""
