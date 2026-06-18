@@ -87,24 +87,34 @@ class WellnessChatbot:
         try:
             api_key = os.environ.get("GEMINI_API_KEY")
             if not api_key:
-                st.warning("GEMINI_API_KEY not found in environment variables. Chatbot will use rule-based responses.")
+                try:
+                    if "GEMINI_API_KEY" in st.secrets:
+                        api_key = st.secrets["GEMINI_API_KEY"]
+                    elif "GOOGLE_API_KEY" in st.secrets:
+                        api_key = st.secrets["GOOGLE_API_KEY"]
+                except Exception:
+                    pass
+
+            if not api_key:
+                st.warning("GEMINI_API_KEY not found. Chatbot will use rule-based responses.")
                 return
 
             genai.configure(api_key=api_key)
             
-            # List available models and find one that supports generateContent
-            selected_model_name = None
-            for m in genai.list_models():
-                if "generateContent" in m.supported_generation_methods:
-                    selected_model_name = m.name
+            # Fixed: Try newer models first, fall back to older ones
+            for model_name in ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-flash-latest']:
+                try:
+                    self.model = genai.GenerativeModel(model_name)
+                    # Test model with simple call
+                    test_response = self.model.generate_content("Say 'Gemini ready'")
+                    print(f"[CHATBOT] Gemini test successful using {model_name}: {test_response.text[:20]}...")
+                    self.gemini_available = True
                     break
+                except Exception as model_error:
+                    print(f"[CHATBOT] Model {model_name} failed: {model_error}")
             
-            if selected_model_name:
-                self.model = genai.GenerativeModel(selected_model_name)
-                self.gemini_available = True
-                # Silent configuration - no UI message needed
-            else:
-                st.warning("No Gemini models supporting 'generateContent' found. Chatbot will use rule-based responses.")
+            if not self.gemini_available:
+                st.warning("Gemini model unavailable. Using enhanced rule-based responses.")
                 
         except Exception as e:
             st.error(f"Error configuring Gemini API: {e}")

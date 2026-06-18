@@ -26,6 +26,15 @@ PROJECT_ROOT = BASE_DIR.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 # ===============================
+# Load Environment Variables
+# ===============================
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+except ImportError:
+    pass
+
+# ===============================
 # Application Modules
 # ===============================
 from src.state.session_state import init_session_state

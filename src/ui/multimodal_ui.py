@@ -105,19 +105,47 @@ def render_multimodal_mode_ui():
                 cap.release()
                 if ret:
                     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    with st.spinner("Analyzing webcam frame..."):
-                        results, error = detect_faces_and_emotions(
-                            frame_rgb, conf_thres, iou_thres
-                        )
-                        if error:
-                            st.error(error)
-                        elif results:
+                    st.info("🧪 Debug Mode: Analyzing webcam frame step by step...")
+                    col1, col2 = st.columns(2)
+                    col1.image(frame_rgb, caption="STEP 1: Raw Webcam Frame")
+                    results, error = detect_faces_and_emotions(
+                        frame_rgb, conf_thres, iou_thres
+                    )
+                    if error:
+                        st.error(f"STEP 2 Error: {error}")
+                        col2.image(frame_rgb, caption="No Detection")
+                    else:
+                        bbox_img = draw_results(frame_rgb, results) if results else frame_rgb
+                        col2.image(bbox_img, caption="STEP 2: Face Detection (bboxes)")
+                        if results:
+                            st.metric("STEP 2: Faces Detected", len(results))
+                            for i, res in enumerate(results):
+                                with st.expander(f"STEP 3-5: Face {i+1} Debug"):
+                                    bbox = res['bbox']
+                                    x1,y1,x2,y2 = map(int, bbox)
+                                    crop = frame_rgb[y1:y2, x1:x2]
+                                    crop_resized = cv2.resize(crop, (224,224))
+                                    st.image(Image.fromarray(crop_resized), caption="STEP 3: Face Crop")
+                                    st.json({
+                                        "STEP 4 Preprocessing": {
+                                            "shape": list(crop.shape),
+                                            "pixel_min": float(crop.min()),
+                                            "pixel_max": float(crop.max()),
+                                        },
+                                        "STEP 5 Model Output": {
+                                            "emotion": res['emotion'],
+                                            "confidence": f"{res['confidence']:.1f}%",
+                                            "face_conf": f"{res['face_conf']:.1f}%"
+                                        }
+                                    })
+                            # Process as before
                             for res in results:
                                 _process_emotion_result_multimodal(
                                     res['emotion'], res['confidence'], "webcam"
                                 )
+                            st.success("✅ Debug complete. Emotion added to multimodal results!")
                         else:
-                            st.warning("No face detected in the webcam frame.")
+                            st.warning("STEP 2: No faces detected.")
                 else:
                     st.error("Failed to capture frame from webcam.")
 

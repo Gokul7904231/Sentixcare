@@ -2,13 +2,8 @@
 fer2013/
 datasets/
 
-# trained models
-models/weights/
-*.pth
-*.pt
-
 # python cache
-__pycache__/
+**/__pycache__/
 *.pyc
 
 # virtual environments
@@ -19,3 +14,7 @@ env/
 # system files
 .DS_Store
 Thumbs.db
+
+# API keys and secrets
+.env
+.streamlit/secrets.toml

@@ -357,11 +357,17 @@ def apply_chat_styling():
     <style>
     /* Chat Container General Styling */
     [data-testid="stChatMessageContent"] {
-        padding: 10px 15px;
-        border-radius: 18px;
+        padding: 15px 20px !important;
+        border-radius: 20px;
         font-size: 15px;
-        line-height: 1.6;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6 !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        hyphens: auto;
     }
     
     /* Native Chat Box */

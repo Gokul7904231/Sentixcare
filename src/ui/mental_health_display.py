@@ -277,7 +277,15 @@ def show_chatbot(emotion):
     # Apply chat styling
     apply_chat_styling()
     
-    st.markdown("### 💬 Wellness Companion")
+    # Diagnostics
+    status_emoji = "🟢" if wellness_chatbot.gemini_available else "🟡"
+    status_text = "Gemini AI Active" if wellness_chatbot.gemini_available else "Enhanced Fallback Mode"
+    st.markdown(f"### 💬 Wellness Companion **{status_emoji} {status_text}**")
+    
+    if hasattr(wellness_chatbot, 'model') and wellness_chatbot.model:
+        model_name = getattr(wellness_chatbot.model, "model_name", "gemini-1.5-flash")
+        display_name = model_name.replace("models/", "").replace("-", " ").title()
+        st.caption(f"🤖 Powered by {display_name}")
     
     # Get initial response based on emotion
     initial_response = wellness_chatbot.get_initial_response(emotion, 80)
@@ -330,7 +338,7 @@ def show_chatbot(emotion):
         for message in st.session_state.chat_history:
             avatar = "👤" if message["role"] == "user" else "🌟"
             with st.chat_message(message["role"], avatar=avatar):
-                st.write(message["content"])
+                st.markdown(f'<div style="white-space: pre-wrap; word-break: break-word; overflow-wrap: anywhere; max-width: 100%; line-height: 1.5;">{message["content"]}</div>', unsafe_allow_html=True)
 
     # Clear chat button
     if st.button("Clear Chat 🗑️", key="clear_chat_btn"):
