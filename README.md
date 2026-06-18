@@ -1,6 +1,6 @@
 # 🧠 Sentixcare — Mood-Driven Personalized Recommendation   System
 
-#Live : https://sentixcare.gokul.software/
+# Live : https://sentixcare.gokul.software/
 
 > **Your Intelligent Mental Health & Wellness Companion**  
 > *Emotion Detection • Music Therapy • Reading Suggestions • Wellness Coaching • AI Chatbot Support* 
